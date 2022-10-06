@@ -7,6 +7,11 @@ const app = express()
 
 const MongoStore = require('connect-mongo')
 
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+
+
+
 app.use(
 session({
   store: MongoStore.create({
@@ -37,6 +42,7 @@ function checkIsLogin (req, res, next) {
 
 app.get("/root/:name", (req, res) => {
   let {name} = req.params;
+  console.log(req.session[name])
   if (!req.session[name]){
   req.session[name] = {};
   req.session[name].name = name;
@@ -91,15 +97,16 @@ app.get('/logout', (req, res) => {
     return res.json("logout error")
   }
   
-  return res.send(`<h1>hasta luego ${name}</h1>. Visitaste ${req.session[name].cantidadDeLogins} veces`)
+  return res.send(`<h1>hasta luego ${user}</h1>. Visitaste ${req.session[user].cantidadDeLogins} veces`)
 
   })
   })
 
 //entro al formulario para ingresar usuario
   app.get('/login', (req, res) => {
-    let {username} = req;
-    if (req.session[username]){
+    let user = req.session;
+    console.log(user.user)
+    if (req.session.user !==undefined){
       res.sendFile(__dirname + '/logueado.html')
     } else {
       res.sendFile(__dirname + '/loginForm.html')
@@ -109,10 +116,11 @@ app.get('/logout', (req, res) => {
 
 
   app.post('/login', (req, res) => {
-    const username = req.body;
-    console.log(username)
-    if (username != undefined){
-      req.session.username = username
+   let {user} = req.body;
+ console.log(user)
+console.log (user == undefined)
+    if (user !==undefined ){
+      req.session.user = user
       res.redirect(__dirname + '/logueado.html')
     } else {
       res.sendFile(__dirname + '/loginForm.html')
@@ -127,7 +135,7 @@ app.get('/logout', (req, res) => {
 
   app.post('/logout', (req, res) => {
     req.session.destroy((err) => {
-      if (!err) res.redirect("/deslogeo")
+      if (!err) res.redirect("/deslogueo")
       else res.send({status : 'desLogeo Error', error: err})
       })
     
